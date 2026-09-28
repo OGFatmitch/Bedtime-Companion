@@ -1,0 +1,1 @@
+export function chunkText(text:string,maxWords=800){const paras=text.split(/\n\s*\n/);const out:string[]=[];let cur="",count=0;for(const p of paras){const w=p.split(/\s+/).length;if(count+w>maxWords&&cur){out.push(cur);cur="";count=0}cur+=(cur?"\n\n":"")+p;count+=w}if(cur)out.push(cur);return out}

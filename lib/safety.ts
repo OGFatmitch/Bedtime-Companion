@@ -1,0 +1,3 @@
+export const hardRules = "No graphic violence, sexual content, adult romance, medical advice, secrecy, scary stakes, private-information requests, or language implying the storyteller replaces parents.";
+export function findUnsafe(text:string, avoid:string[], requestText="") { const lower=text.toLowerCase();const request=requestText.toLowerCase();return avoid.filter(raw=>{const rule=raw.trim().toLowerCase();if(!rule)return false;const [topic]=rule.split(/\s+unless explicitly requested/);if(rule.includes("unless explicitly requested")&&request.includes(topic))return false;return lower.includes(topic)}); }
+export function copyrightWarning(text:string) { return /gabby|poppy|ninjago|wild kratts|sonic|tmnt|doc mcstuffins|vida the vet/i.test(text); }

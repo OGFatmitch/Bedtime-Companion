@@ -1,0 +1,20 @@
+[Unit]
+Description=Bedtime Companion bedroom node
+After=network-online.target sound.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=bedtime
+Group=bedtime
+WorkingDirectory=/opt/bedtime-companion
+EnvironmentFile=/etc/bedtime-companion.env
+ExecStart=/usr/bin/node --import tsx apps/pi-client/src/simulator.ts
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+

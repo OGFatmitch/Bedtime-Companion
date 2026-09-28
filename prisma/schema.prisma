@@ -1,0 +1,241 @@
+generator client {
+ provider = "prisma-client-js"
+}
+datasource db {
+ provider = "sqlite"
+ url = env("DATABASE_URL")
+}
+model ChildProfile {
+ id String @id @default(cuid())
+ name String @unique
+ age Int
+ preferredStoryMinutes Int @default(6)
+ bedtimeTone String
+ favoriteCharacters String
+ favoriteThemes String
+ avoidTopics String
+ endingPreference String
+ notes String @default("")
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ stories Story[]
+ worlds StoryWorld[]
+ devices DeviceNode[]
+ feedback SessionFeedback[]
+ sessions Session[]
+}
+model Story {
+ id String @id @default(cuid())
+ childId String
+ child ChildProfile @relation(fields:[childId],references:[id])
+ title String
+ mode String
+ prompt String @default("")
+ fullText String
+ scenes StoryScene[]
+ audioChunks AudioChunk[]
+ isFavorite Boolean @default(false)
+ status String @default("ready")
+ createdAt DateTime @default(now())
+ feedback SessionFeedback[]
+ mediaAssets MediaAsset[]
+}
+model StoryScene {
+ id String @id @default(cuid())
+ storyId String
+ story Story @relation(fields:[storyId],references:[id],onDelete:Cascade)
+ position Int
+ title String
+ emotionalArc String
+ narrationNotes String
+ text String
+}
+model AudioChunk {
+ id String @id @default(cuid())
+ storyId String
+ story Story @relation(fields:[storyId],references:[id],onDelete:Cascade)
+ position Int
+ text String
+ audioUrl String
+ durationEstimate Int
+}
+model SleepStream {
+ id String @id @default(cuid())
+ childId String
+ title String
+ totalMinutes Int
+ voice String
+ status String @default("ready")
+ createdAt DateTime @default(now())
+ segments SleepStreamSegment[]
+ feedback SessionFeedback[]
+}
+model SleepStreamSegment {
+ id String @id @default(cuid())
+ sleepStreamId String
+ sleepStream SleepStream @relation(fields:[sleepStreamId],references:[id],onDelete:Cascade)
+ position Int
+ targetMinutes Int
+ energyLevel Int
+ theme String
+ instructions String
+ storyId String?
+}
+model StoryWorld {
+ id String @id @default(cuid())
+ childId String
+ child ChildProfile @relation(fields:[childId],references:[id])
+ worldType String
+ title String
+ setting String
+ castJson String @default("[]")
+ inventoryJson String @default("[]")
+ knownFactsJson String @default("[]")
+ relationshipsJson String @default("{}")
+ currentGoal String
+ childChoicesJson String @default("[]")
+ unresolvedThreadsJson String @default("[]")
+ continuityRules String @default("")
+ worldStateJson String @default("{}")
+ currentEpisode Int @default(0)
+ lastEpisodeSummary String @default("")
+ lastSceneSummary String @default("")
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+}
+model DeviceNode {
+ id String @id @default(cuid())
+ name String
+ assignedChildId String?
+ assignedChild ChildProfile? @relation(fields:[assignedChildId],references:[id])
+ location String
+ lastSeenAt DateTime?
+ currentQueueId String?
+ tokenHash String @default("")
+ clientVersion String?
+ lastBootId String?
+ lastCommandSequence Int @default(0)
+ lastStateJson String @default("{}")
+ queues PlaybackQueue[]
+ sessions Session[]
+ commands DeviceCommand[]
+ events DeviceEvent[]
+}
+model PlaybackQueue {
+ id String @id @default(cuid())
+ deviceId String
+ device DeviceNode @relation(fields:[deviceId],references:[id])
+ title String
+ childName String
+ itemsJson String
+ status String @default("queued")
+ createdAt DateTime @default(now())
+}
+
+model Session {
+ id String @id @default(cuid())
+ deviceId String
+ device DeviceNode @relation(fields:[deviceId],references:[id])
+ profileId String
+ profile ChildProfile @relation(fields:[profileId],references:[id])
+ storyId String?
+ mode String
+ requestedDurationMinutes Int?
+ requestedTheme String @default("")
+ state String @default("CREATED")
+ activeItemId String?
+ errorCode String?
+ errorMessage String?
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ completedAt DateTime?
+ items QueueItem[]
+ commands DeviceCommand[]
+ events DeviceEvent[]
+}
+
+model QueueItem {
+ id String @id @default(cuid())
+ sessionId String
+ session Session @relation(fields:[sessionId],references:[id],onDelete:Cascade)
+ position Int
+ type String
+ status String @default("PENDING")
+ text String @default("")
+ interactionJson String?
+ mediaAssetId String?
+ mediaAsset MediaAsset? @relation(fields:[mediaAssetId],references:[id])
+ attempts Int @default(0)
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+
+ @@unique([sessionId, position])
+}
+
+model MediaAsset {
+ id String @id @default(cuid())
+ storyId String?
+ story Story? @relation(fields:[storyId],references:[id],onDelete:SetNull)
+ path String
+ mimeType String
+ byteLength Int
+ sha256 String
+ durationMs Int
+ provider String
+ state String @default("READY")
+ createdAt DateTime @default(now())
+ queueItems QueueItem[]
+}
+
+model DeviceCommand {
+ id String @id @default(cuid())
+ deviceId String
+ device DeviceNode @relation(fields:[deviceId],references:[id],onDelete:Cascade)
+ sessionId String?
+ session Session? @relation(fields:[sessionId],references:[id],onDelete:Cascade)
+ sequence Int
+ name String
+ payloadJson String
+ expiresAt DateTime?
+ acknowledgedAt DateTime?
+ acknowledgement String?
+ createdAt DateTime @default(now())
+
+ @@unique([deviceId, sequence])
+}
+
+model DeviceEvent {
+ id String @id
+ deviceId String
+ device DeviceNode @relation(fields:[deviceId],references:[id],onDelete:Cascade)
+ sessionId String?
+ session Session? @relation(fields:[sessionId],references:[id],onDelete:SetNull)
+ bootId String
+ name String
+ payloadJson String
+ occurredAt DateTime
+ createdAt DateTime @default(now())
+}
+model SessionFeedback {
+ id String @id @default(cuid())
+ childId String
+ child ChildProfile @relation(fields:[childId],references:[id])
+ storyId String?
+ story Story? @relation(fields:[storyId],references:[id])
+ sleepStreamId String?
+ sleepStream SleepStream? @relation(fields:[sleepStreamId],references:[id])
+ askedForOneMore Boolean @default(false)
+ childLiked Boolean?
+ parentRating Int?
+ wouldUseAgain Boolean?
+ notes String @default("")
+ createdAt DateTime @default(now())
+}
+model AppSettings {
+ id String @id @default("default")
+ textModel String @default("gpt-4.1-mini")
+ ttsModel String @default("gpt-4o-mini-tts")
+ defaultVoice String @default("coral")
+ localBaseUrl String @default("http://localhost:3000")
+ globalAvoidTopics String @default("")
+}
