@@ -10,7 +10,7 @@
     "test": "vitest run",
     "check": "npm run lint && npm run typecheck && npm test && npm run build",
     "format": "prettier --write .",
-    "dev:pi-sim": "node --import tsx apps/pi-client/src/simulator.ts",
+    "dev:pi-sim": "node --env-file=.env --import tsx apps/pi-client/src/simulator.ts",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "node --import tsx prisma/seed.ts"

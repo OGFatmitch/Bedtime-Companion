@@ -38,6 +38,8 @@ Start the simulated bedroom node in a second terminal:
 npm run dev:pi-sim
 ```
 
+The local simulator command loads `EMMA_DEVICE_TOKEN` from `.env`. After changing either the device token or its pepper, run `npm run db:seed` to update the stored device-token hash.
+
 Open `http://localhost:3000/session/new`, queue the connection test, and watch the session move from `READY` to `PLAYING` to `COMPLETED`.
 
 ## Quality checks
@@ -68,4 +70,3 @@ The versioned device surface currently includes:
 - `GET /api/health/ready`
 
 The server and simulator import the same schemas from `packages/contracts`.
-
