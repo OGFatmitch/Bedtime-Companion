@@ -16,6 +16,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   const { id } = use(params);
   const [session, setSession] = useState<Snapshot | null>(null);
   const [error, setError] = useState("");
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -35,14 +36,19 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   }, [id]);
 
   async function action(name: "pause" | "resume" | "stop" | "one_more") {
-    await fetch(`/api/v1/sessions/${id}/actions`, {
+    setPendingAction(name);
+    setError("");
+    const response = await fetch(`/api/v1/sessions/${id}/actions`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ action: name }),
     });
+    const body = await response.json();
+    if (!response.ok) setError(body.error?.message ?? `Could not ${name.replace("_", " ")}.`);
+    setPendingAction(null);
   }
 
-  if (error) return <main className="warning">{error}</main>;
+  if (error && !session) return <main className="warning">{error}</main>;
   if (!session) return <main className="card">Loading session…</main>;
   return (
     <main className="grid gap-5">
@@ -52,11 +58,12 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
         <p>{session.device.name} · {session.mode}</p>
         <p className="muted">{session.requestedTheme || "Connection test"}</p>
         <div className="flex gap-2 flex-wrap mt-4">
-          <button className="btn alt" onClick={() => action("pause")}>Pause</button>
-          <button className="btn alt" onClick={() => action("resume")}>Resume</button>
-          <button className="btn alt" onClick={() => action("one_more")}>One more</button>
-          <button className="btn" onClick={() => action("stop")}>Stop</button>
+          <button className="btn alt" disabled={session.state !== "PLAYING" || Boolean(pendingAction)} onClick={() => action("pause")}>{pendingAction === "pause" ? "Pausing…" : "Pause"}</button>
+          <button className="btn alt" disabled={session.state !== "PAUSED" || Boolean(pendingAction)} onClick={() => action("resume")}>{pendingAction === "resume" ? "Resuming…" : "Resume"}</button>
+          <button className="btn alt" disabled={!(["COMPLETED", "STOPPED"].includes(session.state)) || Boolean(pendingAction)} onClick={() => action("one_more")}>{pendingAction === "one_more" ? "Adding…" : "One more"}</button>
+          <button className="btn" disabled={!(["CREATED", "PREPARING", "READY", "PLAYING", "PAUSED", "INTERACTING"].includes(session.state)) || Boolean(pendingAction)} onClick={() => action("stop")}>{pendingAction === "stop" ? "Stopping…" : "Stop"}</button>
         </div>
+        {error && <p className="warning" role="alert">{error}</p>}
         {session.errorMessage && <p className="warning">{session.errorMessage}</p>}
       </section>
       <section className="card">
@@ -68,4 +75,3 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     </main>
   );
 }
-

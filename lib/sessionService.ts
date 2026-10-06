@@ -3,7 +3,7 @@ import { commitMedia, createFallbackWav } from "./mediaStore";
 import type { CreateSessionInput, DeviceCommandEnvelope, MediaManifest } from "@/packages/contracts";
 import { assertTransition } from "./sessionState";
 
-async function createCommand(input: {
+export async function createCommand(input: {
   deviceId: string;
   sessionId?: string;
   name: string;

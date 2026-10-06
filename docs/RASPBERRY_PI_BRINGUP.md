@@ -22,7 +22,7 @@ Do not wire from placeholder GPIO examples.
 2. Set a unique hostname, enable SSH, create a non-default admin account, and join the home Wi-Fi.
 3. Update packages, verify time synchronization, and reserve the Pi address in the router if practical.
 4. Confirm the Mac server is reachable from the intended bedside location.
-5. Create an unprivileged `bedtime` service account and `/var/lib/bedtime-companion/cache`.
+5. Run the client as the unprivileged `bedtimecompanion` user, with its cache under `data/pi-client-cache`.
 
 ## Hardware sequence
 
@@ -58,4 +58,3 @@ Only after this succeeds should simulated player/button/light adapters be replac
 - Disconnecting Wi-Fi does not corrupt local state.
 - No OpenAI key exists on the Pi.
 - The microphone remains unopened until interactive mode explicitly requests listening.
-

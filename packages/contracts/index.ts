@@ -34,6 +34,11 @@ export const sessionActionSchema = z.object({
   action: z.enum(["one_more", "pause", "resume", "stop"]),
 });
 
+export const deviceActionSchema = z.object({
+  action: z.literal("volume.set"),
+  percent: z.number().int().min(0).max(70),
+});
+
 export const deviceConnectSchema = z.object({
   clientVersion: z.string().min(1).max(40),
   bootId: z.string().min(1).max(100),
@@ -67,6 +72,7 @@ export const deviceEventSchema = z.object({
     "playback.started",
     "playback.progress",
     "playback.completed",
+    "playback.stopped",
     "playback.failed",
     "device.error",
     "device.shutdown_requested",
@@ -103,4 +109,3 @@ export type DeviceCommandEnvelope = {
   name: string;
   payload: Record<string, unknown>;
 };
-

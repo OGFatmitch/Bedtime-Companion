@@ -54,6 +54,10 @@ This runs ESLint, TypeScript, Vitest, and the production Next.js build. Runtime 
 
 Follow [docs/RASPBERRY_PI_BRINGUP.md](docs/RASPBERRY_PI_BRINGUP.md). Validate power and the I2S/NeoPixel pin plan before wiring; GPIO values from earlier concept documents are placeholders.
 
+## Mac mini service
+
+Production hosting and recovery commands are documented in [docs/MAC_MINI_SERVICE.md](docs/MAC_MINI_SERVICE.md).
+
 ## API
 
 The versioned device surface currently includes:

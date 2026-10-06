@@ -22,6 +22,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               <Link href="/session/new">Device test</Link>
               <Link href="/profiles">Profiles</Link>
               <Link href="/story/new">New story</Link>
+              <Link href="/stories">Story library</Link>
               <Link href="/sleep-stream/new">Sleep Stream</Link>
               <Link href="/worlds">Story worlds</Link>
               <Link href="/devices">Devices</Link>

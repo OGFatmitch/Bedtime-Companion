@@ -20,7 +20,11 @@ async function applyEvent(event: DeviceEventInput) {
   });
   await prisma.deviceNode.update({
     where: { id: event.deviceId },
-    data: { lastSeenAt: new Date(), lastBootId: event.bootId, lastStateJson: JSON.stringify(event.payload) },
+    data: {
+      lastSeenAt: new Date(),
+      lastBootId: event.bootId,
+      ...(event.name === "device.heartbeat" ? { lastStateJson: JSON.stringify(event.payload) } : {}),
+    },
   });
   if (event.name === "command.acknowledged" && typeof event.payload.commandId === "string") {
     const command = await prisma.deviceCommand.findFirst({ where: { id: event.payload.commandId, deviceId: event.deviceId } });
@@ -39,6 +43,12 @@ async function applyEvent(event: DeviceEventInput) {
   }
   if (event.sessionId && event.name === "playback.completed" && typeof event.payload.itemId === "string") {
     await queueNextItem(event.sessionId, event.payload.itemId);
+  }
+  if (event.sessionId && event.name === "playback.stopped") {
+    await prisma.session.updateMany({
+      where: { id: event.sessionId, state: "STOPPING" },
+      data: { state: "STOPPED", completedAt: new Date(), activeItemId: null },
+    });
   }
   if (event.sessionId && event.name === "playback.failed") {
     await prisma.session.updateMany({
